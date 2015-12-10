@@ -12,10 +12,12 @@ class Opts(object):
 
     def __init__(self):
         print sys.argv
-        parser = OptionParser()
-        parser.add_option("-r", "--root", help="root directory of photo catalogue")
-        parser.add_option("-s", "--scan", help="scan only this subdirectory")
-        (self._opts, self._args) = parser.parse_args()
+        parser = argparse.ArgumentParser(description="Photo catalogue.")
+        parser.add_argument("-r", "--root", dest="root",
+                            help="root directory of photo catalogue")
+        parser.add_argument("-s", "--scan", dest="scan",
+                            help="scan only this subdirectory")
+        self._opts = parser.parse_args()
 
         _path = lambda x : os.path.realpath(os.path.abspath(x))
 
@@ -38,7 +40,7 @@ class Opts(object):
         return
 
     def __str__(self):
-        return "opts=%s args=%s" % (self._opts,self._args)
+        return "opts=%s" % (self._opts,)
 
     pass
 

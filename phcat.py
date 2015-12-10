@@ -5,32 +5,31 @@ import sys
 import os
 
 
-
 class Opts(object):
-	"""Option parser
-	"""
+    """Option parser
+    """
 
-	def __init__(self):
-		return
-	
-	pass
+    def __init__(self):
+        return
+
+    pass
 
 
 class PhCat(object):
-	"""Photo catalogue
-	"""
+    """Photo catalogue
+    """
 
-	def __init__(self, opts):
-		return
-	
-	def scan(self):
-		return
+    def __init__(self, opts):
+        return
 
-	pass
+    def scan(self):
+        return
+
+    pass
 
 
 if __name__ == '__main__':
-	opts = Opts(sys.argv)
-	cat = PhCat(opts)
-	cat.scan()
-	sys.exit(0)
+    opts = Opts(sys.argv)
+    cat = PhCat(opts)
+    cat.scan()
+    sys.exit(0)

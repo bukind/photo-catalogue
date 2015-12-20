@@ -1,9 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys
-import os
 import argparse
+import os
+import subprocess
+import sys
+
+
+def GetImageDate(files):
+    ident = subprocess.Popen(["/usr/bin/identify",
+                              "-ping", "-verbose"] + files,
+                             bufsize=-1, stdout=PIPE, stderr=PIPE)
+    stdout, stderr = ident.communicate()
+    print '#',stdout
+    return stdout
 
 
 class Opts(object):
@@ -17,6 +27,8 @@ class Opts(object):
                             help="root directory of photo catalogue")
         parser.add_argument("-s", "--scan", dest="scan",
                             help="scan only this subdirectory")
+        parser.add_argument("-t", "--test", dest="test",
+                            help="a test file to get the date")
         self._opts = parser.parse_args()
 
         _path = lambda x : os.path.realpath(os.path.abspath(x))
@@ -51,9 +63,12 @@ class PhCat(object):
 
     def __init__(self, opts):
         print opts
+        self.opts = opts
         return
 
     def scan(self):
+        if self.opts.test:
+            GetImageDate(self.opts.test)
         return
 
     pass

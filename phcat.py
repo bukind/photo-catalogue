@@ -7,13 +7,42 @@ import subprocess
 import sys
 
 
+_exif_start = "    exif:DateTime: "
+_date_start = "    date:modify: "
+
 def GetImageDate(files):
-    ident = subprocess.Popen(["/usr/bin/identify",
-                              "-ping", "-verbose"] + files,
-                             bufsize=-1, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = ident.communicate()
-    print '#', stdout
-    return stdout
+    """Get the date of the image file.
+
+    Args:
+      files - a list of the files to get the date
+    Returns:
+      mapping from the filenames to the dates
+    """
+    result = {}
+    for fname in files:
+        ident = subprocess.Popen(["/usr/bin/identify",
+                                  "-ping", "-verbose", fname],
+                                  bufsize=-1,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
+        stdout, stderr = ident.communicate()
+        print '#', stdout
+        exif_date = None
+        date_date = None
+        for line in stdout.split('\n'):
+            if line.startswith(_exif_start):
+                exif_date = line[len(_exif_start):]
+                exif_date = exif_date.replace(':','-',2)
+                print '# Exif date <%s>' % (exif_date,)
+                break
+            elif line.startswith(_date_start):
+                date_date = line[len(_date_start):]
+                date_date = date_date[:19]
+                date_date = date_date.replace('T',' ')
+                print '# Pic date <%s>' % (date_date,)
+
+        result[fname] = exif_date or date_date
+    return result
 
 
 class Opts(object):
@@ -54,6 +83,9 @@ class Opts(object):
     def __str__(self):
         return "opts=%s" % (self._opts,)
 
+    def get_test(self):
+        return self._opts.test
+
     pass
 
 
@@ -67,8 +99,8 @@ class PhCat(object):
         return
 
     def scan(self):
-        if self.opts.test:
-            GetImageDate(self.opts.test)
+        if self.opts.get_test():
+            print GetImageDate([self.opts.get_test(),])
         return
 
     pass

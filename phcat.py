@@ -3,12 +3,16 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 
 
 _exif_start = "    exif:DateTime: "
 _date_start = "    date:modify: "
+_re_date = re.compile("\d\d\d\d[-_]\d\d[-_]\d\d")
+_image_extensions = ('.jpeg', '.jpg', '.png', '.thm', '.gif')
+
 
 def GetImageDate(files):
     """Get the date of the image file.
@@ -26,22 +30,31 @@ def GetImageDate(files):
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE)
         stdout, stderr = ident.communicate()
-        print '#', stdout
-        exif_date = None
-        date_date = None
+        # print '#', stdout
+        date = None
         for line in stdout.split('\n'):
             if line.startswith(_exif_start):
-                exif_date = line[len(_exif_start):]
-                exif_date = exif_date.replace(':','-',2)
-                print '# Exif date <%s>' % (exif_date,)
+                date = line[len(_exif_start):]
+                date = date.replace(':','-',2)[:10]
+                print '# Exif date <%s>' % (date,)
                 break
             elif line.startswith(_date_start):
-                date_date = line[len(_date_start):]
-                date_date = date_date[:19]
-                date_date = date_date.replace('T',' ')
-                print '# Pic date <%s>' % (date_date,)
+                date = line[len(_date_start):]
+                date = date[:10]
+                print '# Pic date <%s>' % (date,)
 
-        result[fname] = exif_date or date_date
+        if not date:
+            # trying to extract the date from the filename
+            m = _re_date.search(fname)
+            if m:
+                date = m.group(0).replace('_','-')
+                print '# File date <%s>' % (date,)
+
+        if date:
+            assert(len(date) == 10)
+            result[fname] = date
+        else:
+            print '# DATE NOT FOUND <%s>' % fname
     return result
 
 
@@ -86,6 +99,11 @@ class Opts(object):
     def get_test(self):
         return self._opts.test
 
+    def get_root(self):
+        return self._opts.root
+
+    def get_scan(self):
+        return self._opts.scan
     pass
 
 
@@ -101,6 +119,23 @@ class PhCat(object):
     def scan(self):
         if self.opts.get_test():
             print GetImageDate([self.opts.get_test(),])
+            return
+        # collect all image files and receive their dates
+        allimages = {}
+        for root, dirs, files in os.walk(self.opts.get_scan()):
+            notdot = [d for d in dirs if not d.startswith('.')]
+            dirs[:] = notdot
+            images = [os.path.join(root,f) for f in files if
+                      os.path.splitext(f)[1].lower() in _image_extensions]
+            if images:
+                print '\n'.join(images)
+                print GetImageDate(images)
+                allimages.update(images)
+        # produce commands to arrange them into file hierarchy
+        # the hierarchy is based off ROOT and is like this.
+        # YYYY/
+        #      YYYY_MM/image
+        #      all/YYYY_MM_DD[-optional]/image
         return
 
     pass

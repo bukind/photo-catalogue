@@ -12,7 +12,7 @@ def GetImageDate(files):
                               "-ping", "-verbose"] + files,
                              bufsize=-1, stdout=PIPE, stderr=PIPE)
     stdout, stderr = ident.communicate()
-    print '#',stdout
+    print '#', stdout
     return stdout
 
 
@@ -42,13 +42,13 @@ class Opts(object):
         self._opts.scan = _path(self._opts.scan)
 
         if not os.path.isdir(self._opts.root):
-            raise ValueError, "root must be existing directory"            
+            raise ValueError, "root must be existing directory"
         if not os.path.isdir(self._opts.scan):
             raise ValueError, "scan must be existing directory"
 
         if not self._opts.scan.startswith(self._opts.root):
             raise ValueError, "scan must be a subdirectory of root"
-            
+
         return
 
     def __str__(self):

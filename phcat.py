@@ -36,19 +36,19 @@ def GetImageDate(files):
             if line.startswith(_exif_start):
                 date = line[len(_exif_start):]
                 date = date.replace(':','-',2)[:10]
-                print '# Exif date <%s>' % (date,)
+                # print '# Exif date <%s>' % (date,)
                 break
             elif line.startswith(_date_start):
                 date = line[len(_date_start):]
                 date = date[:10]
-                print '# Pic date <%s>' % (date,)
+                # print '# Pic date <%s>' % (date,)
 
         if not date:
             # trying to extract the date from the filename
             m = _re_date.search(fname)
             if m:
                 date = m.group(0).replace('_','-')
-                print '# File date <%s>' % (date,)
+                # print '# File date <%s>' % (date,)
 
         if date:
             assert(len(date) == 10)
@@ -128,14 +128,34 @@ class PhCat(object):
             images = [os.path.join(root,f) for f in files if
                       os.path.splitext(f)[1].lower() in _image_extensions]
             if images:
-                print '\n'.join(images)
-                print GetImageDate(images)
-                allimages.update(images)
+                # print '\n'.join(images)
+                allimages.update( ** GetImageDate(images) )
         # produce commands to arrange them into file hierarchy
         # the hierarchy is based off ROOT and is like this.
         # YYYY/
         #      YYYY_MM/image
         #      all/YYYY_MM_DD[-optional]/image
+        rootdir = self.opts.get_root()
+        for image in sorted(allimages.iterkeys()):
+            year, month, day = allimages[image].split('-')
+            mondir = os.path.join(rootdir, year,
+                                 '%s_%s' % (year, month))
+            if not os.path.isdir(mondir):
+                self._makedirs(mondir)
+            srcbase = os.path.basename(image)
+            dstbase = srcbase.lower().replace(' ','-')
+            dst1 = os.path.join(mondir,dstbase)
+            if not os.path.isfile(dst1):
+                # should create the file here
+                pass
+            daydir = os.path.join(rootdir, year, 'all',
+                                  '%s_%s_%s' % (year, month, day))
+            if not os.path.isdir(daydir):
+                self._makedirs(daydir)
+
+            if not os.path.isfile(dst2):
+                # should create the file here
+            print '%04s %02s %02s %s' % (year, month, day, image)
         return
 
     pass
